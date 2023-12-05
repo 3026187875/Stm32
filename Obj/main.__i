@@ -1,0 +1,6 @@
+-c --cpu Cortex-M3 -g -O1 --apcs=interwork --split_sections -I ..\src -I ..\Core -I ..\Lib\inc -I ..\System\delay -I ..\System\sys -I ..\System\usart -I ..\HARDWARE\BEEP -I ..\HARDWARE\KEY -I ..\HARDWARE\LED
+-IC:\Users\leioukupo\Desktop\STM32\src\RTE
+-IC:\Keil_v5\Packs\Keil\STM32F1xx_DFP\2.2.0\Device\Include
+-IC:\Keil_v5\ARM\CMSIS\Include
+-D__UVISION_VERSION="521" -DSTM32F10X_MD -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER
+-o ..\obj\main.o --omf_browse ..\obj\main.crf --depend ..\obj\main.d "main.c"
