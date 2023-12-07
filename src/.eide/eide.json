@@ -166,9 +166,7 @@
   },
   "targets": {
     "learn": {
-      "excludeList": [
-        "<virtual_root>/Hardware/timer.c"
-      ],
+      "excludeList": [],
       "toolchain": "AC5",
       "compileConfig": {
         "cpuType": "Cortex-M3",
