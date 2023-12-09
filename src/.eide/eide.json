@@ -47,6 +47,9 @@
           },
           {
             "path": "../HARDWARE/Tim/timer.c"
+          },
+          {
+            "path": "../HARDWARE/USART/myusart.c"
           }
         ],
         "folders": []
@@ -166,7 +169,9 @@
   },
   "targets": {
     "learn": {
-      "excludeList": [],
+      "excludeList": [
+        "<virtual_root>/Sytem/usart.c"
+      ],
       "toolchain": "AC5",
       "compileConfig": {
         "cpuType": "Cortex-M3",
@@ -314,7 +319,8 @@
           "../HARDWARE/Tim",
           "../HARDWARE/Pwm",
           "../HARDWARE/Oled",
-          "../HARDWARE/Rtc"
+          "../HARDWARE/Rtc",
+          "../HARDWARE/USART"
         ],
         "libList": [],
         "sourceDirList": [],
