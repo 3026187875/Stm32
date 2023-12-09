@@ -170,7 +170,7 @@
   "targets": {
     "learn": {
       "excludeList": [
-        "<virtual_root>/Sytem/usart.c"
+        "<virtual_root>/Hardware/myusart.c"
       ],
       "toolchain": "AC5",
       "compileConfig": {
@@ -319,8 +319,7 @@
           "../HARDWARE/Tim",
           "../HARDWARE/Pwm",
           "../HARDWARE/Oled",
-          "../HARDWARE/Rtc",
-          "../HARDWARE/USART"
+          "../HARDWARE/Rtc"
         ],
         "libList": [],
         "sourceDirList": [],
