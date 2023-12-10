@@ -37,6 +37,9 @@
             "path": "../HARDWARE/LED/led.c"
           },
           {
+            "path": "../HARDWARE/Oled/oled_sram.c"
+          },
+          {
             "path": "../HARDWARE/Oled/oled.c"
           },
           {
