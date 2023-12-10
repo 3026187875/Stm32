@@ -34,10 +34,10 @@
             "path": "../HARDWARE/KEY/key.c"
           },
           {
-            "path": "../HARDWARE/LED/led.c"
+            "path": "../HARDWARE/Lcd/lcd.c"
           },
           {
-            "path": "../HARDWARE/Oled/oled_sram.c"
+            "path": "../HARDWARE/LED/led.c"
           },
           {
             "path": "../HARDWARE/Oled/oled.c"
@@ -173,7 +173,8 @@
   "targets": {
     "learn": {
       "excludeList": [
-        "<virtual_root>/Hardware/myusart.c"
+        "<virtual_root>/Hardware/myusart.c",
+        "<virtual_root>/Hardware/oled.c"
       ],
       "toolchain": "AC5",
       "compileConfig": {
@@ -322,7 +323,8 @@
           "../HARDWARE/Tim",
           "../HARDWARE/Pwm",
           "../HARDWARE/Oled",
-          "../HARDWARE/Rtc"
+          "../HARDWARE/Rtc",
+          "../HARDWARE/Lcd"
         ],
         "libList": [],
         "sourceDirList": [],
