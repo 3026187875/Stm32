@@ -301,7 +301,7 @@ u8 usmart_get_fname(u8 *str, u8 *fname, u8 *pnum, u8 *rval)
 				fname++;
 			}
 		}
-		else // 已经接受完了函数名了.
+		else // 已经接受完了函数名了
 		{
 			if (*strtemp == ',')
 			{
@@ -319,6 +319,7 @@ u8 usmart_get_fname(u8 *str, u8 *fname, u8 *pnum, u8 *rval)
 			}
 			if (fover == 1 && temp == 2)
 			{
+				// TODO: 两个字符以上说明是一个参数？？？
 				temp++;	   // 防止重复增加
 				parmnum++; // 参数增加一个
 			}
