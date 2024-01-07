@@ -329,7 +329,9 @@
           "../HARDWARE/Lcd",
           "../Usmart"
         ],
-        "libList": [],
+        "libList": [
+          ".pack/Keil/STM32F1xx_DFP.2.4.0/Device/StdPeriph_Driver/inc"
+        ],
         "sourceDirList": [],
         "defineList": [
           "STM32F10X_MD",

@@ -1,30 +1,45 @@
 #ifndef __RTC_H
-#define __RTC_H
-// Mini STM32¿ª·¢°å
-// RTCÊµÊ±Ê±ÖÓ Çı¶¯´úÂë
-// ÕıµãÔ­×Ó@ALIENTEK
-// 2010/6/6
+#define __RTC_H	 
+#include "sys.h" 
+ //////////////////////////////////////////////////////////////////////////////////	 
+//æœ¬ç¨‹åºåªä¾›å­¦ä¹ ä½¿ç”¨ï¼Œæœªç»ä½œè€…è®¸å¯ï¼Œä¸å¾—ç”¨äºå…¶å®ƒä»»ä½•ç”¨é€”
+//ALIENTEK STM32F407å¼€å‘æ¿
+//RTC é©±åŠ¨ä»£ç 	   
+//æ­£ç‚¹åŸå­@ALIENTEK
+//æŠ€æœ¯è®ºå›:www.openedv.com
+//åˆ›å»ºæ—¥æœŸ:2014/5/5
+//ç‰ˆæœ¬ï¼šV1.1
+//ç‰ˆæƒæ‰€æœ‰ï¼Œç›—ç‰ˆå¿…ç©¶ã€‚
+//Copyright(C) å¹¿å·å¸‚æ˜Ÿç¿¼ç”µå­ç§‘æŠ€æœ‰é™å…¬å¸ 2014-2024
+//All rights reserved									  
+//********************************************************************************
+//ä¿®æ”¹è¯´æ˜
+//V1.1 20140726
+//æ–°å¢:RTC_Get_Weekå‡½æ•°,ç”¨äºæ ¹æ®å¹´æœˆæ—¥ä¿¡æ¯,å¾—åˆ°æ˜ŸæœŸä¿¡æ¯.
+////////////////////////////////////////////////////////////////////////////////// 
 
-// Ê±¼ä½á¹¹Ìå
-typedef struct
-{
-	vu8 hour;
-	vu8 min;
-	vu8 sec;
-	// ¹«ÀúÈÕÔÂÄêÖÜ
-	vu16 w_year;
-	vu8 w_month;
-	vu8 w_date;
-	vu8 week;
-} _calendar_obj;
-extern _calendar_obj calendar; // ÈÕÀú½á¹¹Ìå
+	
+u8 My_RTC_Init(void);						//RTCåˆå§‹åŒ–
+ErrorStatus RTC_Set_Time(u8 hour,u8 min,u8 sec,u8 ampm);			//RTCæ—¶é—´è®¾ç½®
+ErrorStatus RTC_Set_Date(u8 year,u8 month,u8 date,u8 week); 		//RTCæ—¥æœŸè®¾ç½®
+void RTC_Set_AlarmA(u8 week,u8 hour,u8 min,u8 sec);		//è®¾ç½®é—¹é’Ÿæ—¶é—´(æŒ‰æ˜ŸæœŸé—¹é“ƒ,24å°æ—¶åˆ¶)
+void RTC_Set_WakeUp(u32 wksel,u16 cnt);					//å‘¨æœŸæ€§å”¤é†’å®šæ—¶å™¨è®¾ç½®
 
-extern u8 const mon_table[12];				  // ÔÂ·İÈÕÆÚÊı¾İ±í
-void Disp_Time(u8 x, u8 y, u8 size);		  // ÔÚÖÆ¶¨Î»ÖÃ¿ªÊ¼ÏÔÊ¾Ê±¼ä
-void Disp_Week(u8 x, u8 y, u8 size, u8 lang); // ÔÚÖ¸¶¨Î»ÖÃÏÔÊ¾ĞÇÆÚ
-u8 RTC_Init(void);							  // ³õÊ¼»¯RTC,·µ»Ø0,Ê§°Ü;1,³É¹¦;
-u8 Is_Leap_Year(u16 year);					  // Æ½Äê,ÈòÄêÅĞ¶Ï
-u8 RTC_Get(void);							  // ¸üĞÂÊ±¼ä
-u8 RTC_Get_Week(u16 year, u8 month, u8 day);
-u8 RTC_Set(u16 syear, u8 smon, u8 sday, u8 hour, u8 min, u8 sec); // ÉèÖÃÊ±¼ä
 #endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
