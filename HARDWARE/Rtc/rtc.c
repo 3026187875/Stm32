@@ -1,196 +1,232 @@
-#include "rtc.h"
-#include "led.h"
+#include "sys.h"
 #include "delay.h"
 #include "usart.h"
-#include "stm32f10x_rtc.h"
-//////////////////////////////////////////////////////////////////////////////////
-// æœ¬ç¨‹åºåªä¾›å­¦ä¹ ä½¿ç”¨ï¼Œæœªç»ä½œè€…è®¸å¯ï¼Œä¸å¾—ç”¨äºå…¶å®ƒä»»ä½•ç”¨é€”
-// ALIENTEK STM32F407å¼€å‘æ¿
-// RTC é©±åŠ¨ä»£ç 
-// æ­£ç‚¹åŸå­@ALIENTEK
-// æŠ€æœ¯è®ºå›:www.openedv.com
-// åˆ›å»ºæ—¥æœŸ:2014/5/5
-// ç‰ˆæœ¬ï¼šV1.1
-// ç‰ˆæƒæ‰€æœ‰ï¼Œç›—ç‰ˆå¿…ç©¶ã€‚
-// Copyright(C) å¹¿å·å¸‚æ˜Ÿç¿¼ç”µå­ç§‘æŠ€æœ‰é™å…¬å¸ 2014-2024
-// All rights reserved
-//********************************************************************************
-// ä¿®æ”¹è¯´æ˜
-// V1.1 20140726
-// æ–°å¢:RTC_Get_Weekå‡½æ•°,ç”¨äºæ ¹æ®å¹´æœˆæ—¥ä¿¡æ¯,å¾—åˆ°æ˜ŸæœŸä¿¡æ¯.
-//////////////////////////////////////////////////////////////////////////////////
+#include "rtc.h"
+// Mini STM32¿ª·¢°å
+// RTCÊµÊ±Ê±ÖÓ Çı¶¯´úÂë
+// ÕıµãÔ­×Ó@ALIENTEK
+// 2010/6/6
 
-NVIC_InitTypeDef NVIC_InitStructure;
+_calendar_obj calendar; // Ê±ÖÓ½á¹¹Ìå
 
-// RTCæ—¶é—´è®¾ç½®
-// hour,min,sec:å°æ—¶,åˆ†é’Ÿ,ç§’é’Ÿ
-// ampm:@RTC_AM_PM_Definitions  :RTC_H12_AM/RTC_H12_PM
-// è¿”å›å€¼:SUCEE(1),æˆåŠŸ
-//        ERROR(0),è¿›å…¥åˆå§‹åŒ–æ¨¡å¼å¤±è´¥
-ErrorStatus RTC_Set_Time(u8 hour, u8 min, u8 sec, u8 ampm)
+static void RTC_NVIC_Config(void)
 {
-	RTC_TimeTypeDef RTC_TimeTypeInitStructure;
-
-	RTC_TimeTypeInitStructure.RTC_Hours = hour;
-	RTC_TimeTypeInitStructure.RTC_Minutes = min;
-	RTC_TimeTypeInitStructure.RTC_Seconds = sec;
-	RTC_TimeTypeInitStructure.RTC_H12 = ampm;
-
-	return RTC_SetTime(RTC_Format_BIN, &RTC_TimeTypeInitStructure);
-}
-// RTCæ—¥æœŸè®¾ç½®
-// year,month,date:å¹´(0~99),æœˆ(1~12),æ—¥(0~31)
-// week:æ˜ŸæœŸ(1~7,0,éæ³•!)
-// è¿”å›å€¼:SUCEE(1),æˆåŠŸ
-//        ERROR(0),è¿›å…¥åˆå§‹åŒ–æ¨¡å¼å¤±è´¥
-ErrorStatus RTC_Set_Date(u8 year, u8 month, u8 date, u8 week)
-{
-
-	RTC_DateTypeDef RTC_DateTypeInitStructure;
-	RTC_DateTypeInitStructure.RTC_Date = date;
-	RTC_DateTypeInitStructure.RTC_Month = month;
-	RTC_DateTypeInitStructure.RTC_WeekDay = week;
-	RTC_DateTypeInitStructure.RTC_Year = year;
-	return RTC_SetDate(RTC_Format_BIN, &RTC_DateTypeInitStructure);
+	NVIC_InitTypeDef NVIC_InitStructure;
+	NVIC_InitStructure.NVIC_IRQChannel = RTC_IRQn;			  // RTCÈ«¾ÖÖĞ¶Ï
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0; // ÏÈÕ¼ÓÅÏÈ¼¶1Î»,´ÓÓÅÏÈ¼¶3Î»
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;		  // ÏÈÕ¼ÓÅÏÈ¼¶0Î»,´ÓÓÅÏÈ¼¶4Î»
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;			  // Ê¹ÄÜ¸ÃÍ¨µÀÖĞ¶Ï
+	NVIC_Init(&NVIC_InitStructure);							  // ¸ù¾İNVIC_InitStructÖĞÖ¸¶¨µÄ²ÎÊı³õÊ¼»¯ÍâÉèNVIC¼Ä´æÆ÷
 }
 
-// RTCåˆå§‹åŒ–
-// è¿”å›å€¼:0,åˆå§‹åŒ–æˆåŠŸ;
-//        1,LSEå¼€å¯å¤±è´¥;
-//        2,è¿›å…¥åˆå§‹åŒ–æ¨¡å¼å¤±è´¥;
-u8 My_RTC_Init(void)
-{
-	RTC_InitTypeDef RTC_InitStructure;
-	u16 retry = 0X1FFF;
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR, ENABLE); // ä½¿èƒ½PWRæ—¶é’Ÿ
-	PWR_BackupAccessCmd(ENABLE);						// ä½¿èƒ½åå¤‡å¯„å­˜å™¨è®¿é—®
+// ÊµÊ±Ê±ÖÓÅäÖÃ
+// ³õÊ¼»¯RTCÊ±ÖÓ,Í¬Ê±¼ì²âÊ±ÖÓÊÇ·ñ¹¤×÷Õı³£
+// BKP->DR1ÓÃÓÚ±£´æÊÇ·ñµÚÒ»´ÎÅäÖÃµÄÉèÖÃ
+// ·µ»Ø0:Õı³£
+// ÆäËû:´íÎó´úÂë
 
-	if (RTC_ReadBackupRegister(RTC_BKP_DR0) != 0x5050) // æ˜¯å¦ç¬¬ä¸€æ¬¡é…ç½®?
+u8 RTC_Init(void)
+{
+	// ¼ì²éÊÇ²»ÊÇµÚÒ»´ÎÅäÖÃÊ±ÖÓ
+	u8 temp = 0;
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR | RCC_APB1Periph_BKP, ENABLE); // Ê¹ÄÜPWRºÍBKPÍâÉèÊ±ÖÓ
+	PWR_BackupAccessCmd(ENABLE);											 // Ê¹ÄÜºó±¸¼Ä´æÆ÷·ÃÎÊ
+	if (BKP_ReadBackupRegister(BKP_DR1) != 0x5050)							 // ´ÓÖ¸¶¨µÄºó±¸¼Ä´æÆ÷ÖĞ¶Á³öÊı¾İ:¶Á³öÁËÓëĞ´ÈëµÄÖ¸¶¨Êı¾İ²»Ïàºõ
 	{
-		RCC_LSEConfig(RCC_LSE_ON);							// LSE å¼€å¯
-		while (RCC_GetFlagStatus(RCC_FLAG_LSERDY) == RESET) // æ£€æŸ¥æŒ‡å®šçš„RCCæ ‡å¿—ä½è®¾ç½®ä¸å¦,ç­‰å¾…ä½é€Ÿæ™¶æŒ¯å°±ç»ª
+
+		BKP_DeInit();										// ¸´Î»±¸·İÇøÓò
+		RCC_LSEConfig(RCC_LSE_ON);							// ÉèÖÃÍâ²¿µÍËÙ¾§Õñ(LSE),Ê¹ÓÃÍâÉèµÍËÙ¾§Õñ
+		while (RCC_GetFlagStatus(RCC_FLAG_LSERDY) == RESET) // ¼ì²éÖ¸¶¨µÄRCC±êÖ¾Î»ÉèÖÃÓë·ñ,µÈ´ıµÍËÙ¾§Õñ¾ÍĞ÷
 		{
-			retry++;
+			temp++;
 			delay_ms(10);
 		}
-		if (retry == 0)
-			return 1; // LSE å¼€å¯å¤±è´¥.
-
-		RCC_RTCCLKConfig(RCC_RTCCLKSource_LSE); // è®¾ç½®RTCæ—¶é’Ÿ(RTCCLK),é€‰æ‹©LSEä½œä¸ºRTCæ—¶é’Ÿ
-		RCC_RTCCLKCmd(ENABLE);					// ä½¿èƒ½RTCæ—¶é’Ÿ
-
-		RTC_InitStructure.RTC_AsynchPrediv = 0x7F;			  // RTCå¼‚æ­¥åˆ†é¢‘ç³»æ•°(1~0X7F)
-		RTC_InitStructure.RTC_SynchPrediv = 0xFF;			  // RTCåŒæ­¥åˆ†é¢‘ç³»æ•°(0~7FFF)
-		RTC_InitStructure.RTC_HourFormat = RTC_HourFormat_24; // RTCè®¾ç½®ä¸º,24å°æ—¶æ ¼å¼
-		RTC_Init(&RTC_InitStructure);
-
-		RTC_Set_Time(23, 59, 56, RTC_H12_AM); // è®¾ç½®æ—¶é—´
-		RTC_Set_Date(14, 5, 5, 1);			  // è®¾ç½®æ—¥æœŸ
-
-		RTC_WriteBackupRegister(RTC_BKP_DR0, 0x5050); // æ ‡è®°å·²ç»åˆå§‹åŒ–è¿‡äº†
+		if (temp >= 250)
+			return 1;							  // ³õÊ¼»¯Ê±ÖÓÊ§°Ü,¾§ÕñÓĞÎÊÌâ
+		RCC_RTCCLKConfig(RCC_RTCCLKSource_LSE);	  // ÉèÖÃRTCÊ±ÖÓ(RTCCLK),Ñ¡ÔñLSE×÷ÎªRTCÊ±ÖÓ
+		RCC_RTCCLKCmd(ENABLE);					  // Ê¹ÄÜRTCÊ±ÖÓ
+		RTC_WaitForLastTask();					  // µÈ´ı×î½üÒ»´Î¶ÔRTC¼Ä´æÆ÷µÄĞ´²Ù×÷Íê³É
+		RTC_WaitForSynchro();					  // µÈ´ıRTC¼Ä´æÆ÷Í¬²½
+		RTC_ITConfig(RTC_IT_SEC, ENABLE);		  // Ê¹ÄÜRTCÃëÖĞ¶Ï
+		RTC_WaitForLastTask();					  // µÈ´ı×î½üÒ»´Î¶ÔRTC¼Ä´æÆ÷µÄĞ´²Ù×÷Íê³É
+		RTC_EnterConfigMode();					  /// ÔÊĞíÅäÖÃ
+		RTC_SetPrescaler(32767);				  // ÉèÖÃRTCÔ¤·ÖÆµµÄÖµ
+		RTC_WaitForLastTask();					  // µÈ´ı×î½üÒ»´Î¶ÔRTC¼Ä´æÆ÷µÄĞ´²Ù×÷Íê³É
+		RTC_Set(2009, 12, 2, 10, 0, 55);		  // ÉèÖÃÊ±¼ä
+		RTC_ExitConfigMode();					  // ÍË³öÅäÖÃÄ£Ê½
+		BKP_WriteBackupRegister(BKP_DR1, 0X5050); // ÏòÖ¸¶¨µÄºó±¸¼Ä´æÆ÷ÖĞĞ´ÈëÓÃ»§³ÌĞòÊı¾İ
 	}
+	else // ÏµÍ³¼ÌĞø¼ÆÊ±
+	{
 
+		RTC_WaitForSynchro();			  // µÈ´ı×î½üÒ»´Î¶ÔRTC¼Ä´æÆ÷µÄĞ´²Ù×÷Íê³É
+		RTC_ITConfig(RTC_IT_SEC, ENABLE); // Ê¹ÄÜRTCÃëÖĞ¶Ï
+		RTC_WaitForLastTask();			  // µÈ´ı×î½üÒ»´Î¶ÔRTC¼Ä´æÆ÷µÄĞ´²Ù×÷Íê³É
+	}
+	RTC_NVIC_Config(); // RCTÖĞ¶Ï·Ö×éÉèÖÃ
+	RTC_Get();		   // ¸üĞÂÊ±¼ä
+	return 0;		   // ok
+}
+// RTCÊ±ÖÓÖĞ¶Ï
+// Ã¿Ãë´¥·¢Ò»´Î
+// extern u16 tcnt;
+void RTC_IRQHandler(void)
+{
+	if (RTC_GetITStatus(RTC_IT_SEC) != RESET) // ÃëÖÓÖĞ¶Ï
+	{
+		RTC_Get(); // ¸üĞÂÊ±¼ä
+	}
+	if (RTC_GetITStatus(RTC_IT_ALR) != RESET) // ÄÖÖÓÖĞ¶Ï
+	{
+		RTC_ClearITPendingBit(RTC_IT_ALR); // ÇåÄÖÖÓÖĞ¶Ï
+	}
+	RTC_ClearITPendingBit(RTC_IT_SEC | RTC_IT_OW); // ÇåÄÖÖÓÖĞ¶Ï
+	RTC_WaitForLastTask();
+}
+// ÅĞ¶ÏÊÇ·ñÊÇÈòÄêº¯Êı
+// ÔÂ·İ   1  2  3  4  5  6  7  8  9  10 11 12
+// ÈòÄê   31 29 31 30 31 30 31 31 30 31 30 31
+// ·ÇÈòÄê 31 28 31 30 31 30 31 31 30 31 30 31
+// ÊäÈë:Äê·İ
+// Êä³ö:¸ÃÄê·İÊÇ²»ÊÇÈòÄê.1,ÊÇ.0,²»ÊÇ
+u8 Is_Leap_Year(u16 year)
+{
+	if (year % 4 == 0) // ±ØĞëÄÜ±»4Õû³ı
+	{
+		if (year % 100 == 0)
+		{
+			if (year % 400 == 0)
+				return 1; // Èç¹ûÒÔ00½áÎ²,»¹ÒªÄÜ±»400Õû³ı
+			else
+				return 0;
+		}
+		else
+			return 1;
+	}
+	else
+		return 0;
+}
+// ÉèÖÃÊ±ÖÓ
+// °ÑÊäÈëµÄÊ±ÖÓ×ª»»ÎªÃëÖÓ
+// ÒÔ1970Äê1ÔÂ1ÈÕÎª»ù×¼
+// 1970~2099ÄêÎªºÏ·¨Äê·İ
+// ·µ»ØÖµ:0,³É¹¦;ÆäËû:´íÎó´úÂë.
+// ÔÂ·İÊı¾İ±í
+u8 const table_week[12] = {0, 3, 3, 6, 1, 4, 6, 2, 5, 0, 3, 5}; // ÔÂĞŞÕıÊı¾İ±í
+// Æ½ÄêµÄÔÂ·İÈÕÆÚ±í
+const u8 mon_table[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+u8 RTC_Set(u16 syear, u8 smon, u8 sday, u8 hour, u8 min, u8 sec)
+{
+	u16 t;
+	u32 seccount = 0;
+	if (syear < 1970 || syear > 2099)
+		return 1;
+	for (t = 1970; t < syear; t++) // °ÑËùÓĞÄê·İµÄÃëÖÓÏà¼Ó
+	{
+		if (Is_Leap_Year(t))
+			seccount += 31622400; // ÈòÄêµÄÃëÖÓÊı
+		else
+			seccount += 31536000; // Æ½ÄêµÄÃëÖÓÊı
+	}
+	smon -= 1;
+	for (t = 0; t < smon; t++) // °ÑÇ°ÃæÔÂ·İµÄÃëÖÓÊıÏà¼Ó
+	{
+		seccount += (u32)mon_table[t] * 86400; // ÔÂ·İÃëÖÓÊıÏà¼Ó
+		if (Is_Leap_Year(syear) && t == 1)
+			seccount += 86400; // ÈòÄê2ÔÂ·İÔö¼ÓÒ»ÌìµÄÃëÖÓÊı
+	}
+	seccount += (u32)(sday - 1) * 86400; // °ÑÇ°ÃæÈÕÆÚµÄÃëÖÓÊıÏà¼Ó
+	seccount += (u32)hour * 3600;		 // Ğ¡Ê±ÃëÖÓÊı
+	seccount += (u32)min * 60;			 // ·ÖÖÓÃëÖÓÊı
+	seccount += sec;					 // ×îºóµÄÃëÖÓ¼ÓÉÏÈ¥
+
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR | RCC_APB1Periph_BKP, ENABLE); // Ê¹ÄÜPWRºÍBKPÍâÉèÊ±ÖÓ
+	PWR_BackupAccessCmd(ENABLE);											 // Ê¹ÄÜRTCºÍºó±¸¼Ä´æÆ÷·ÃÎÊ
+	RTC_SetCounter(seccount);												 // ÉèÖÃRTC¼ÆÊıÆ÷µÄÖµ
+
+	RTC_WaitForLastTask(); // µÈ´ı×î½üÒ»´Î¶ÔRTC¼Ä´æÆ÷µÄĞ´²Ù×÷Íê³É
+	RTC_Get();
 	return 0;
 }
-
-// è®¾ç½®é—¹é’Ÿæ—¶é—´(æŒ‰æ˜ŸæœŸé—¹é“ƒ,24å°æ—¶åˆ¶)
-// week:æ˜ŸæœŸå‡ (1~7) @ref  RTC_Alarm_Definitions
-// hour,min,sec:å°æ—¶,åˆ†é’Ÿ,ç§’é’Ÿ
-void RTC_Set_AlarmA(u8 week, u8 hour, u8 min, u8 sec)
+// µÃµ½µ±Ç°µÄÊ±¼ä
+// ·µ»ØÖµ:0,³É¹¦;ÆäËû:´íÎó´úÂë.
+u8 RTC_Get(void)
 {
-	EXTI_InitTypeDef EXTI_InitStructure;
-	RTC_AlarmTypeDef RTC_AlarmTypeInitStructure;
-	RTC_TimeTypeDef RTC_TimeTypeInitStructure;
-
-	RTC_AlarmCmd(RTC_Alarm_A, DISABLE); // å…³é—­é—¹é’ŸA
-
-	RTC_TimeTypeInitStructure.RTC_Hours = hour;	 // å°æ—¶
-	RTC_TimeTypeInitStructure.RTC_Minutes = min; // åˆ†é’Ÿ
-	RTC_TimeTypeInitStructure.RTC_Seconds = sec; // ç§’
-	RTC_TimeTypeInitStructure.RTC_H12 = RTC_H12_AM;
-
-	RTC_AlarmTypeInitStructure.RTC_AlarmDateWeekDay = week;								  // æ˜ŸæœŸ
-	RTC_AlarmTypeInitStructure.RTC_AlarmDateWeekDaySel = RTC_AlarmDateWeekDaySel_WeekDay; // æŒ‰æ˜ŸæœŸé—¹
-	RTC_AlarmTypeInitStructure.RTC_AlarmMask = RTC_AlarmMask_None;						  // ç²¾ç¡®åŒ¹é…æ˜ŸæœŸï¼Œæ—¶åˆ†ç§’
-	RTC_AlarmTypeInitStructure.RTC_AlarmTime = RTC_TimeTypeInitStructure;
-	RTC_SetAlarm(RTC_Format_BIN, RTC_Alarm_A, &RTC_AlarmTypeInitStructure);
-
-	RTC_ClearITPendingBit(RTC_IT_ALRA);	 // æ¸…é™¤RTCé—¹é’ŸAçš„æ ‡å¿—
-	EXTI_ClearITPendingBit(EXTI_Line17); // æ¸…é™¤LINE17ä¸Šçš„ä¸­æ–­æ ‡å¿—ä½
-
-	RTC_ITConfig(RTC_IT_ALRA, ENABLE); // å¼€å¯é—¹é’ŸAä¸­æ–­
-	RTC_AlarmCmd(RTC_Alarm_A, ENABLE); // å¼€å¯é—¹é’ŸA
-
-	EXTI_InitStructure.EXTI_Line = EXTI_Line17;			   // LINE17
-	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;	   // ä¸­æ–­äº‹ä»¶
-	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising; // ä¸Šå‡æ²¿è§¦å‘
-	EXTI_InitStructure.EXTI_LineCmd = ENABLE;			   // ä½¿èƒ½LINE17
-	EXTI_Init(&EXTI_InitStructure);						   // é…ç½®
-
-	NVIC_InitStructure.NVIC_IRQChannel = RTC_Alarm_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x02; // æŠ¢å ä¼˜å…ˆçº§1
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x02;		 // å­ä¼˜å…ˆçº§2
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;				 // ä½¿èƒ½å¤–éƒ¨ä¸­æ–­é€šé“
-	NVIC_Init(&NVIC_InitStructure);								 // é…ç½®
-}
-
-// å‘¨æœŸæ€§å”¤é†’å®šæ—¶å™¨è®¾ç½®
-/*wksel:  @ref RTC_Wakeup_Timer_Definitions
-#define RTC_WakeUpClock_RTCCLK_Div16        ((uint32_t)0x00000000)
-#define RTC_WakeUpClock_RTCCLK_Div8         ((uint32_t)0x00000001)
-#define RTC_WakeUpClock_RTCCLK_Div4         ((uint32_t)0x00000002)
-#define RTC_WakeUpClock_RTCCLK_Div2         ((uint32_t)0x00000003)
-#define RTC_WakeUpClock_CK_SPRE_16bits      ((uint32_t)0x00000004)
-#define RTC_WakeUpClock_CK_SPRE_17bits      ((uint32_t)0x00000006)
-*/
-// cnt:è‡ªåŠ¨é‡è£…è½½å€¼.å‡åˆ°0,äº§ç”Ÿä¸­æ–­.
-void RTC_Set_WakeUp(u32 wksel, u16 cnt)
-{
-	EXTI_InitTypeDef EXTI_InitStructure;
-
-	RTC_WakeUpCmd(DISABLE); // å…³é—­WAKE UP
-
-	RTC_WakeUpClockConfig(wksel); // å”¤é†’æ—¶é’Ÿé€‰æ‹©
-
-	RTC_SetWakeUpCounter(cnt); // è®¾ç½®WAKE UPè‡ªåŠ¨é‡è£…è½½å¯„å­˜å™¨
-
-	RTC_ClearITPendingBit(RTC_IT_WUT);	 // æ¸…é™¤RTC WAKE UPçš„æ ‡å¿—
-	EXTI_ClearITPendingBit(EXTI_Line22); // æ¸…é™¤LINE22ä¸Šçš„ä¸­æ–­æ ‡å¿—ä½ 
-
-	RTC_ITConfig(RTC_IT_WUT, ENABLE); // å¼€å¯WAKE UP å®šæ—¶å™¨ä¸­æ–­
-	RTC_WakeUpCmd(ENABLE);			  // å¼€å¯WAKE UP å®šæ—¶å™¨ã€€
-
-	EXTI_InitStructure.EXTI_Line = EXTI_Line22;			   // LINE22
-	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;	   // ä¸­æ–­äº‹ä»¶
-	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising; // ä¸Šå‡æ²¿è§¦å‘
-	EXTI_InitStructure.EXTI_LineCmd = ENABLE;			   // ä½¿èƒ½LINE22
-	EXTI_Init(&EXTI_InitStructure);						   // é…ç½®
-
-	NVIC_InitStructure.NVIC_IRQChannel = RTC_WKUP_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x02; // æŠ¢å ä¼˜å…ˆçº§1
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x02;		 // å­ä¼˜å…ˆçº§2
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;				 // ä½¿èƒ½å¤–éƒ¨ä¸­æ–­é€šé“
-	NVIC_Init(&NVIC_InitStructure);								 // é…ç½®
-}
-
-// RTCé—¹é’Ÿä¸­æ–­æœåŠ¡å‡½æ•°
-void RTC_Alarm_IRQHandler(void)
-{
-	if (RTC_GetFlagStatus(RTC_FLAG_ALRAF) == SET) // ALARM Aä¸­æ–­?
+	static u16 daycnt = 0;
+	u32 timecount = 0;
+	u32 temp = 0;
+	u16 temp1 = 0;
+	timecount = RTC_GetCounter();
+	temp = timecount / 86400; // µÃµ½ÌìÊı(ÃëÖÓÊı¶ÔÓ¦µÄ)
+	if (daycnt != temp)		  // ³¬¹ıÒ»ÌìÁË
 	{
-		RTC_ClearFlag(RTC_FLAG_ALRAF); // æ¸…é™¤ä¸­æ–­æ ‡å¿—
-		printf("ALARM A!\r\n");
+		daycnt = temp;
+		temp1 = 1970; // ´Ó1970Äê¿ªÊ¼
+		while (temp >= 365)
+		{
+			if (Is_Leap_Year(temp1)) // ÊÇÈòÄê
+			{
+				if (temp >= 366)
+					temp -= 366; // ÈòÄêµÄÃëÖÓÊı
+				else
+				{
+					temp1++;
+					break;
+				}
+			}
+			else
+				temp -= 365; // Æ½Äê
+			temp1++;
+		}
+		calendar.w_year = temp1; // µÃµ½Äê·İ
+		temp1 = 0;
+		while (temp >= 28) // ³¬¹ıÁËÒ»¸öÔÂ
+		{
+			if (Is_Leap_Year(calendar.w_year) && temp1 == 1) // µ±ÄêÊÇ²»ÊÇÈòÄê/2ÔÂ·İ
+			{
+				if (temp >= 29)
+					temp -= 29; // ÈòÄêµÄÃëÖÓÊı
+				else
+					break;
+			}
+			else
+			{
+				if (temp >= mon_table[temp1])
+					temp -= mon_table[temp1]; // Æ½Äê
+				else
+					break;
+			}
+			temp1++;
+		}
+		calendar.w_month = temp1 + 1; // µÃµ½ÔÂ·İ
+		calendar.w_date = temp + 1;	  // µÃµ½ÈÕÆÚ
 	}
-	EXTI_ClearITPendingBit(EXTI_Line17); // æ¸…é™¤ä¸­æ–­çº¿17çš„ä¸­æ–­æ ‡å¿—
+	temp = timecount % 86400;														  // µÃµ½ÃëÖÓÊı
+	calendar.hour = temp / 3600;													  // Ğ¡Ê±
+	calendar.min = (temp % 3600) / 60;												  // ·ÖÖÓ
+	calendar.sec = (temp % 3600) % 60;												  // ÃëÖÓ
+	calendar.week = RTC_Get_Week(calendar.w_year, calendar.w_month, calendar.w_date); // »ñÈ¡ĞÇÆÚ
+	return 0;
 }
-
-// RTC WAKE UPä¸­æ–­æœåŠ¡å‡½æ•°
-void RTC_WKUP_IRQHandler(void)
+// »ñµÃÏÖÔÚÊÇĞÇÆÚ¼¸
+// ¹¦ÄÜÃèÊö:ÊäÈë¹«ÀúÈÕÆÚµÃµ½ĞÇÆÚ(Ö»ÔÊĞí1901-2099Äê)
+// ÊäÈë²ÎÊı£º¹«ÀúÄêÔÂÈÕ
+// ·µ»ØÖµ£ºĞÇÆÚºÅ
+u8 RTC_Get_Week(u16 year, u8 month, u8 day)
 {
-	if (RTC_GetFlagStatus(RTC_FLAG_WUTF) == SET) // WK_UPä¸­æ–­?
-	{
-		RTC_ClearFlag(RTC_FLAG_WUTF); // æ¸…é™¤ä¸­æ–­æ ‡å¿—
-		LED1 = !LED1;
-	}
-	EXTI_ClearITPendingBit(EXTI_Line22); // æ¸…é™¤ä¸­æ–­çº¿22çš„ä¸­æ–­æ ‡å¿—
+	u16 temp2;
+	u8 yearH, yearL;
+
+	yearH = year / 100;
+	yearL = year % 100;
+	// Èç¹ûÎª21ÊÀ¼Í,Äê·İÊı¼Ó100
+	if (yearH > 19)
+		yearL += 100;
+	// Ëù¹ıÈòÄêÊıÖ»Ëã1900ÄêÖ®ºóµÄ
+	temp2 = yearL + yearL / 4;
+	temp2 = temp2 % 7;
+	temp2 = temp2 + day + table_week[month - 1];
+	if (yearL % 4 == 0 && month < 3)
+		temp2--;
+	return (temp2 % 7);
 }
