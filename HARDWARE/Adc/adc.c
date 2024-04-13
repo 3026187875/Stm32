@@ -1,5 +1,6 @@
 #include"adc.h"
 #include "delay.h"
+#include "stm32f10x_adc.h"
 void Adc_Init(void)
 {
     // 开启时钟
@@ -35,8 +36,8 @@ u16 Get_Adc(u8 channel){
 }
 u16 Get_Adc_Average(u8 ch, u8 times){
     u32 temp_val = 0;
-    u8 t;
-    for (int i = 0; i < times; i++)
+    u8 i;
+    for ( i = 0; i < times; i++)
     {
         temp_val+=Get_Adc(ch);
         delay_ms(5);
