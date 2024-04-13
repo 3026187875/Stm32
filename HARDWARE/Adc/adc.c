@@ -3,7 +3,7 @@
 void Adc_Init(void)
 {
     // 开启时钟
-    RCCAHB1PeriphClockCmd(RCCAHB1Periph_GPIOA, ENABLE);
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, ENABLE);
     RCC_ADCCLKConfig(RCC_PCLK2_Div6); // 设置ADC时钟，设置ADC分频因子6 72M/6=12,ADC最大时间不能超过14M
     // 初始化GPIO
@@ -36,7 +36,7 @@ u16 Get_Adc(u8 channel){
 u16 Get_Adc_Average(u8 ch, u8 times){
     u32 temp_val = 0;
     u8 t;
-    for ( i = 0; i < times; i++)
+    for (int i = 0; i < times; i++)
     {
         temp_val+=Get_Adc(ch);
         delay_ms(5);

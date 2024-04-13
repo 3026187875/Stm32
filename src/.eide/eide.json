@@ -3,8 +3,7 @@
   "type": "ARM",
   "dependenceList": [],
   "srcDirs": [
-    ".eide/deps",
-    "../Usmart"
+    ".eide/deps"
   ],
   "virtualFolder": {
     "name": "<virtual_root>",
@@ -330,12 +329,8 @@
           "../HARDWARE/Oled",
           "../HARDWARE/Rtc",
           "../HARDWARE/Lcd",
-<<<<<<< HEAD
           "../Usmart",
           "../HARDWARE/Adc"
-=======
-          "../Usmart"
->>>>>>> f21efb7fcc2531a6256c198096583e8b2a86f69b
         ],
         "libList": [
           ".pack/Keil/STM32F1xx_DFP.2.4.0/Device/StdPeriph_Driver/inc"
