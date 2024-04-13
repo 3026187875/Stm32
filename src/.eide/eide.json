@@ -176,9 +176,9 @@
   "targets": {
     "learn": {
       "excludeList": [
-        "<virtual_root>/Hardware/myusart.c",
         "<virtual_root>/Hardware/pwm.c",
-        "<virtual_root>/Hardware/lcd.c"
+        "<virtual_root>/Hardware/lcd.c",
+        "<virtual_root>/Hardware/myusart.c"
       ],
       "toolchain": "AC5",
       "compileConfig": {

@@ -1,10 +1,10 @@
 #include"adc.h"
 #include "delay.h"
-#include "stm32f10x_adc.h"
+#include "stm32f10x_rcc.h"
 void Adc_Init(void)
 {
     // 开启时钟
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE); // GPIOA的时钟定义错误，应就近挂在APB2上，而不能图省事直接挂在AHB上
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, ENABLE);
     RCC_ADCCLKConfig(RCC_PCLK2_Div6); // 设置ADC时钟，设置ADC分频因子6 72M/6=12,ADC最大时间不能超过14M
     // 初始化GPIO
