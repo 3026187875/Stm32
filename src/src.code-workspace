@@ -27,7 +27,10 @@
             "editor.insertSpaces": true,
             "editor.tabSize": 4,
             "editor.autoIndent": "advanced"
-        }
+        },
+        "C_Cpp.default.browse.path": [
+            "C:\\Keil_v5\\ARM\\ARMCC\\include"
+        ]
     },
     "extensions": {
         "recommendations": [

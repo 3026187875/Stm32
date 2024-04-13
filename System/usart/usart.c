@@ -114,28 +114,28 @@ void USART1_IRQHandler(void) // 串口1中断服务程序
 #if SYSTEM_SUPPORT_OS // 如果SYSTEM_SUPPORT_OS为真，则需要支持OS.
 	OSIntEnter();
 #endif
-	if (USART_GetITStatus(USART1, USART_IT_RXNE) != RESET) // 接收中断(接收到的数据必须是0x0d 0x0a结尾)
+	if (USART_GetITStatus(USART1, USART_IT_RXNE) != RESET) // 接收中断(接收到的数据必须是0x0d 回车 0x0a 换行 结尾)
 	{
 		Res = USART_ReceiveData(USART1); // 读取接收到的数据
 
 		if ((USART_RX_STA & 0x8000) == 0) // 接收未完成
 		{
-			if (USART_RX_STA & 0x4000) // 接收到了0x0d
+			if (USART_RX_STA & 0x4000) // 接收到了0x0d  ascii码 对于回车键
 			{
-				if (Res != 0x0a)
+				if (Res != 0x0a) // ascii码 换行码
 					USART_RX_STA = 0; // 接收错误,重新开始
 				else
 					USART_RX_STA |= 0x8000; // 接收完成了
 			}
-			else // 还没收到0X0D
+			else // 还没收到0X0D 
 			{
-				if (Res == 0x0d)
+				if (Res == 0x0d) // 回车
 					USART_RX_STA |= 0x4000;
-				else
+				else //没有接收到回车
 				{
-					USART_RX_BUF[USART_RX_STA & 0X3FFF] = Res;
+					USART_RX_BUF[USART_RX_STA & 0X3FFF] = Res; // 0X3FFF --->  0011 1111 1111 1111    数组的第0到13位置存储接收的数据个数	取个数
 					USART_RX_STA++;
-					if (USART_RX_STA > (USART_REC_LEN - 1))
+					if (USART_RX_STA > (USART_REC_LEN - 1))  //接收的数据个数大于定义的最大数量
 						USART_RX_STA = 0; // 接收数据错误,重新开始接收
 				}
 			}

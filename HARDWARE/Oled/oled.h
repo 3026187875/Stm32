@@ -1,10 +1,10 @@
 #ifndef __OLED_H
 #define __OLED_H
 //              ----------------------------------------------------------------
-//              GND  µçÔ´µØ
-//              VCC  3.3vµçÔ´
-//              D0   PA3£¨SCL£©
-//              D1   PA4£¨SDA£©
+//              GND  ç”µæºåœ°
+//              VCC  3.3vç”µæº
+//              D0   PA3ï¼ˆSCLï¼‰
+//              D1   PA4ï¼ˆSDAï¼‰
 //              RES  PA5
 //              DC   PA6
 //              CS   PA7
@@ -17,12 +17,12 @@
 #include "sys.h"
 #include "stdlib.h"	
 
-//-----------------²âÊÔLED¶Ë¿Ú¶¨Òå---------------- 
+//-----------------æµ‹è¯•LEDç«¯å£å®šä¹‰---------------- 
 
 #define LED_ON GPIO_ResetBits(GPIOB,GPIO_Pin_8)
 #define LED_OFF GPIO_SetBits(GPIOB,GPIO_Pin_8)
 
-//-----------------OLED¶Ë¿Ú¶¨Òå---------------- 
+//-----------------OLEDç«¯å£å®šä¹‰---------------- 
 
 #define OLED_SCLK_Clr() GPIO_ResetBits(GPIOA,D0)
 #define OLED_SCLK_Set() GPIO_SetBits(GPIOA,D0)
@@ -39,8 +39,8 @@
 #define OLED_CS_Clr()  GPIO_ResetBits(GPIOA,CS)//CS
 #define OLED_CS_Set()  GPIO_SetBits(GPIOA,CS)
 
-#define OLED_CMD  0	//Ğ´ÃüÁî
-#define OLED_DATA 1	//Ğ´Êı¾İ
+#define OLED_CMD  0	//å†™å‘½ä»¤
+#define OLED_DATA 1	//å†™æ•°æ®
 #define u8 unsigned char
 #define u32 unsigned int
 

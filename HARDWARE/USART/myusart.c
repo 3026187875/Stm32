@@ -2,19 +2,18 @@
 #include "myusart.h"
 void my_uart1_init(void)
 {
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE); // 1.使能相关时钟
-    RCC_APB1PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
-    GPIO_InitTypeDef a;
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_USART1, ENABLE); // 1.使能相关时钟
+    GPIO_InitTypeDef a,b;
     USART_InitTypeDef uart1;
     NVIC_InitTypeDef nvic1;
     a.GPIO_Mode = GPIO_Mode_AF_PP;
     a.GPIO_Pin = GPIO_Pin_9;
     a.GPIO_Speed = GPIO_Speed_10MHz;
-    GPIO_Init(GPIOA, &a); // 2.初始化相应的gpio模式
-    a.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-    a.GPIO_Pin = GPIO_Pin_10;
-    a.GPIO_Speed = GPIO_Speed_10MHz;
-    GPIO_Init(GPIOA, &a); // 2.初始化相应的gpio模式
+    GPIO_Init(GPIOA, &a); // 2.初始化相应的gpio模式  PA9
+    b.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+    b.GPIO_Pin = GPIO_Pin_10;
+    b.GPIO_Speed = GPIO_Speed_10MHz;
+    GPIO_Init(GPIOA, &b); // 2.初始化相应的gpio模式 PA10
 
     uart1.USART_BaudRate = 115200;
     uart1.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
@@ -43,11 +42,3 @@ void USART1_IRQHandler(void)
         USART_SendData(USART1, res);
     }
 }
-// int main(void)
-// {
-//     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2); // 配置nvic组
-//     my_uart1_init();
-//     while (1)
-//     {
-//     }
-// }
