@@ -25,6 +25,9 @@
         "name": "Hardware",
         "files": [
           {
+            "path": "../HARDWARE/Adc/adc.c"
+          },
+          {
             "path": "../HARDWARE/BEEP/beep.c"
           },
           {
@@ -32,6 +35,9 @@
           },
           {
             "path": "../HARDWARE/KEY/key.c"
+          },
+          {
+            "path": "../HARDWARE/Lcd/lcd.c"
           },
           {
             "path": "../HARDWARE/LED/led.c"
@@ -47,6 +53,9 @@
           },
           {
             "path": "../HARDWARE/Tim/timer.c"
+          },
+          {
+            "path": "../HARDWARE/USART/myusart.c"
           }
         ],
         "folders": []
@@ -167,7 +176,9 @@
   "targets": {
     "learn": {
       "excludeList": [
-        "<virtual_root>/Hardware/timer.c"
+        "<virtual_root>/Hardware/myusart.c",
+        "<virtual_root>/Hardware/pwm.c",
+        "<virtual_root>/Hardware/lcd.c"
       ],
       "toolchain": "AC5",
       "compileConfig": {
@@ -316,9 +327,14 @@
           "../HARDWARE/Tim",
           "../HARDWARE/Pwm",
           "../HARDWARE/Oled",
-          "../HARDWARE/Rtc"
+          "../HARDWARE/Rtc",
+          "../HARDWARE/Lcd",
+          "../Usmart",
+          "../HARDWARE/Adc"
         ],
-        "libList": [],
+        "libList": [
+          ".pack/Keil/STM32F1xx_DFP.2.4.0/Device/StdPeriph_Driver/inc"
+        ],
         "sourceDirList": [],
         "defineList": [
           "STM32F10X_MD",
