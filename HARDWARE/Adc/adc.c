@@ -10,7 +10,7 @@ void Adc_Init(void)
     // 初始化GPIO
     GPIO_InitTypeDef ADC_PA1;
     ADC_PA1.GPIO_Pin = GPIO_Pin_1;
-    ADC_PA1.GPIO_Mode = GPIO_Mode_AIN;// 普通输出模式
+    ADC_PA1.GPIO_Mode = GPIO_Mode_AIN;// 普通输入模式
     ADC_PA1.GPIO_Speed = GPIO_Speed_50MHz;// 50MHz
     // ADC_PA1.GPIO_PuPd = GPIO_PuPd_NOPULL;// 上拉
     ADC_InitTypeDef adc1_1;
