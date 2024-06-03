@@ -31,6 +31,9 @@
             "path": "../HARDWARE/BEEP/beep.c"
           },
           {
+            "path": "../HARDWARE/Ds18b20/Ds18b20.c"
+          },
+          {
             "path": "../HARDWARE/Exit/exit.c"
           },
           {
@@ -178,7 +181,15 @@
       "excludeList": [
         "<virtual_root>/Hardware/pwm.c",
         "<virtual_root>/Hardware/lcd.c",
-        "<virtual_root>/Hardware/myusart.c"
+        "<virtual_root>/Hardware/myusart.c",
+        "<virtual_root>/Hardware/adc.c",
+        "<virtual_root>/Hardware/beep.c",
+        "<virtual_root>/Hardware/exit.c",
+        "<virtual_root>/Hardware/key.c",
+        "<virtual_root>/Hardware/led.c",
+        "<virtual_root>/Hardware/oled.c",
+        "<virtual_root>/Hardware/rtc.c",
+        "<virtual_root>/Hardware/timer.c"
       ],
       "toolchain": "AC5",
       "compileConfig": {
@@ -330,7 +341,8 @@
           "../HARDWARE/Rtc",
           "../HARDWARE/Lcd",
           "../Usmart",
-          "../HARDWARE/Adc"
+          "../HARDWARE/Adc",
+          "../HARDWARE/Ds18b20"
         ],
         "libList": [
           ".pack/Keil/STM32F1xx_DFP.2.4.0/Device/StdPeriph_Driver/inc"
