@@ -2,9 +2,7 @@
   "name": "learn",
   "type": "ARM",
   "dependenceList": [],
-  "srcDirs": [
-    ".eide/deps"
-  ],
+  "srcDirs": [],
   "virtualFolder": {
     "name": "<virtual_root>",
     "files": [],
@@ -332,7 +330,6 @@
           "../HARDWARE/LED",
           ".cmsis/include",
           "RTE/_learn",
-          ".eide/deps",
           "../HARDWARE/USART",
           "../HARDWARE/Exit",
           "../HARDWARE/Tim",
@@ -347,7 +344,6 @@
         "libList": [
           ".pack/Keil/STM32F1xx_DFP.2.4.0/Device/StdPeriph_Driver/inc"
         ],
-        "sourceDirList": [],
         "defineList": [
           "STM32F10X_MD",
           "USE_STDPERIPH_DRIVER"
@@ -355,5 +351,5 @@
       }
     }
   },
-  "version": "3.3"
+  "version": "3.4"
 }
