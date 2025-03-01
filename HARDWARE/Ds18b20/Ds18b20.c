@@ -48,27 +48,27 @@ void Write_Bit(int data)
 {
     if (data == 0)
     {
-        GPIO_WriteBit(GPIOC, GPIO_Pin_15, RESET);
+        GPIO_WriteBit(GPIOC, GPIO_Pin_15, Bit_RESET);
         delay_us(70);
-        GPIO_WriteBit(GPIOC, GPIO_Pin_15, SET);
+        GPIO_WriteBit(GPIOC, GPIO_Pin_15, Bit_SET);
         delay_us(15);
     }
     else
     {
-        GPIO_WriteBit(GPIOC, GPIO_Pin_15, RESET);
+        GPIO_WriteBit(GPIOC, GPIO_Pin_15, Bit_RESET);
         delay_us(9);
-        GPIO_WriteBit(GPIOC, GPIO_Pin_15, SET);
+        GPIO_WriteBit(GPIOC, GPIO_Pin_15, Bit_SET);
         delay_us(70);
     }
 }
 unsigned char Read_Bit(void)
 {
     Data_Port_OUT();
-    GPIO_WriteBit(GPIOC, GPIO_Pin_15, RESET);
+    GPIO_WriteBit(GPIOC, GPIO_Pin_15, Bit_RESET);
     delay_us(12);
     Data_Port_IN();
     delay_us(10);
-    if (GPIO_ReadInputDataBit(GPIOC, 15) == SET)
+    if (GPIO_ReadInputDataBit(GPIOC, 15) == Bit_SET)
     {
         return 1;
     }
@@ -83,10 +83,10 @@ void WriteOneChar(unsigned char data)
     unsigned char i = 0;
     for (i = 8; i > 0; i--)
     {
-        GPIO_WriteBit(GPIOC, GPIO_Pin_15, 0);
+        GPIO_WriteBit(GPIOC, GPIO_Pin_15, Bit_RESET);
         Write_Bit(data & 0x01); // 0x01 = 0000 0001  data&0x01与完后就是写入data的最低位
         delay_us(25);
-        GPIO_WriteBit(GPIOC, GPIO_Pin_15, 1);
+        GPIO_WriteBit(GPIOC, GPIO_Pin_15, Bit_SET);
         data >>= 1; // 右移一位
     }
     delay_us(30);
@@ -97,9 +97,9 @@ unsigned char ReadOneChar(void)
     unsigned char data = 0;
     for (i = 8; i > 0; i--)
     {
-        GPIO_WriteBit(GPIOC, GPIO_Pin_15, 0); 
+        GPIO_WriteBit(GPIOC, GPIO_Pin_15, Bit_RESET); 
         data >>= 1;
-        GPIO_WriteBit(GPIOC, GPIO_Pin_15, 1);
+        GPIO_WriteBit(GPIOC, GPIO_Pin_15, Bit_SET);
         if (GPIO_ReadInputDataBit(GPIOC, 15)){
             data |= 0x80; // 0x80 = 1000 0000 第八位置1，也就是第八位接受到的数据是1
         }
